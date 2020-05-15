@@ -8,7 +8,10 @@ then
 	mkdir /torrents/GeoIP
 fi
 
-wget -q https://geolite.clash.dev/Country.mmdb -O /torrents/GeoIP/GeoLite2-Country.mmdb
+if [ -n "$GEOIP_AUTOUPDATE" ] || [ ! -f /torrents/GeoIP/GeoLite2-Country.mmdb ]
+then
+	wget -q https://geolite.clash.dev/Country.mmdb -O /torrents/GeoIP/GeoLite2-Country.mmdb
+fi
 
 if [ ! -f /config/qBittorrent.conf ]
 then
