@@ -21,7 +21,7 @@ RUN apk add --update --no-cache \
     zlib-dev \
   && rm -rf /tmp/* /var/cache/apk/*
 
-ARG LIBTORRENT_VERSION="1.2.7"
+ARG LIBTORRENT_VERSION="1.2.9"
 
 RUN cd /tmp \
   && git clone https://github.com/arvidn/libtorrent.git \
