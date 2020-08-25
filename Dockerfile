@@ -26,7 +26,7 @@ ARG LIBTORRENT_VERSION="1.2.9"
 RUN cd /tmp \
   && git clone https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
-  && git checkout tags/libtorrent_${LIBTORRENT_VERSION//./_} \
+  && git checkout tags/libtorrent-${LIBTORRENT_VERSION} \
   && ./autotool.sh \
   && ./configure \
     --with-libiconv \
