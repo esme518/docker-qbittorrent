@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.11 as builder
+FROM alpine:3.12 as builder
 
 RUN apk add --update --no-cache \
     autoconf \
@@ -21,12 +21,12 @@ RUN apk add --update --no-cache \
     zlib-dev \
   && rm -rf /tmp/* /var/cache/apk/*
 
-ARG LIBTORRENT_VERSION="1.2.9"
+ARG LIBTORRENT_VERSION="1.2.12"
 
 RUN cd /tmp \
   && git clone https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
-  && git checkout tags/libtorrent-${LIBTORRENT_VERSION} \
+  && git checkout tags/v${LIBTORRENT_VERSION} \
   && ./autotool.sh \
   && ./configure \
     --with-libiconv \
