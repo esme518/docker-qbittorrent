@@ -10,6 +10,7 @@ RUN apk add --update --no-cache \
     binutils \
     boost-dev \
     boost-python3 \
+    py3-setuptools \
     build-base \
     cppunit-dev \
     git \
