@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.11 as builder
+FROM alpine:3.12 as builder
 
 RUN apk add --update --no-cache \
     boost-dev \
@@ -12,7 +12,6 @@ RUN apk add --update --no-cache \
     git \
     libressl-dev \
     make \
-    ninja \
     qt5-qtbase \
     qt5-qttools-dev \
     tar \
@@ -27,6 +26,7 @@ RUN set -ex \
   && git checkout tags/v${LIBTORRENT_VERSION} \
   && cmake -B builddir \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_STANDARD=17 \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
   && cmake --build builddir \
   && cmake --install builddir \
@@ -39,8 +39,9 @@ RUN set -ex \
   && git clone https://github.com/qbittorrent/qBittorrent.git \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && cmake -G "Ninja" -B builddir \
+  && cmake -B builddir \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_STANDARD=17 \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DDBUS=OFF \
         -DGUI=OFF \
