@@ -2,54 +2,45 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.11 as builder
+FROM alpine:3.12 as builder
 
 RUN apk add --update --no-cache \
-    autoconf \
-    automake \
-    binutils \
     boost-dev \
-    boost-python3 \
-    build-base \
-    cppunit-dev \
+    cmake \
+    curl \
+    g++ \
     git \
-    libtool \
-    linux-headers \
-    ncurses-dev \
-    openssl-dev \
-    python3-dev \
-    zlib-dev \
+    libressl-dev \
+    make \
+    qt5-qtbase \
+    qt5-qttools-dev \
+    tar \
   && rm -rf /tmp/* /var/cache/apk/*
 
 ARG LIBTORRENT_VERSION="1.1.14"
 
-RUN cd /tmp \
+RUN set -ex \
+  && cd /tmp \
   && git clone https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
   && git checkout tags/libtorrent-${LIBTORRENT_VERSION//./_} \
-  && ./autotool.sh \
-  && ./configure \
-    --with-libiconv \
-    --enable-python-binding \
-    --with-boost-python="$(ls -1 /usr/lib/libboost_python3*.so* | sort | head -1 | sed 's/.*.\/lib\(.*\)\.so.*/\1/')" \
-    PYTHON="$(which python3)" \
-  && make -j$(nproc) \
-  && make install-strip \
+  && cmake -B builddir \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+  && cmake --build builddir \
+  && cmake --install builddir \
+  && mv /usr/local/lib64/* /usr/local/lib \
   && ls -al /usr/local/lib/
-
-RUN apk add --update --no-cache \
-    qt5-qtbase \
-    qt5-qttools-dev \
-  && rm -rf /tmp/* /var/cache/apk/*
 
 ARG QBITTORRENT_VERSION="4.1.9.1"
 
-RUN cd /tmp \
+RUN set -ex \
+  && cd /tmp \
   && git clone https://github.com/qbittorrent/qBittorrent.git \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && ./configure --disable-gui \
-  && make -j$(nproc) \
+  && ./configure --disable-gui --disable-stacktrace \
+  && make \
   && make install \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
@@ -58,7 +49,7 @@ RUN cd /tmp \
   && tar -xvf /qbittorrent.tar -C /qbittorrent-bin \
   && cp --parents /usr/local/bin/qbittorrent-nox /qbittorrent-bin
 
-FROM alpine:3.11
+FROM alpine:3.12
 
 COPY --from=builder /qbittorrent-bin /
 
@@ -69,7 +60,7 @@ RUN runDeps="$( \
     | sort -u \
   )" \
   && apk add --update --no-cache --virtual .run-deps $runDeps \
-  && apk add --update --no-cache ca-certificates dumb-init su-exec \
+  && apk add --update --no-cache ca-certificates dumb-init python3 su-exec \
   && rm -rf /tmp/* /var/cache/apk/*
 
 RUN chmod a+x /usr/local/bin/qbittorrent-nox \
