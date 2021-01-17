@@ -26,10 +26,11 @@ RUN set -ex \
   && git checkout tags/v${LIBTORRENT_VERSION} \
   && cmake -B builddir \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_STANDARD=17 \
+        -DCMAKE_CXX_STANDARD=14 \
         -DCMAKE_INSTALL_PREFIX=/usr/local \
   && cmake --build builddir \
   && cmake --install builddir \
+  && mv /usr/local/lib64/* /usr/local/lib \
   && ls -al /usr/local/lib/
 
 ARG QBITTORRENT_VERSION="4.2.5"
@@ -39,16 +40,9 @@ RUN set -ex \
   && git clone https://github.com/qbittorrent/qBittorrent.git \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && cmake -B builddir \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_STANDARD=17 \
-        -DCMAKE_INSTALL_PREFIX=/usr/local \
-        -DDBUS=OFF \
-        -DGUI=OFF \
-        -DQBT_VER_STATUS="" \
-        -DSTACKTRACE=OFF \
-  && cmake --build builddir \
-  && cmake --install builddir \
+  && ./configure CXXFLAGS="-std=c++14" --disable-gui --disable-stacktrace \
+  && make \
+  && make install \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
   && ldd /usr/local/bin/qbittorrent-nox |cut -d ">" -f 2|grep lib|cut -d "(" -f 1|xargs tar -chvf /qbittorrent.tar \
