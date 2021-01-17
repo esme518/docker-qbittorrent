@@ -49,6 +49,7 @@ RUN set -ex \
         -DSTACKTRACE=OFF \
   && cmake --build builddir \
   && cmake --install builddir \
+  && mv /usr/local/lib64/* /usr/local/lib \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
   && ldd /usr/local/bin/qbittorrent-nox |cut -d ">" -f 2|grep lib|cut -d "(" -f 1|xargs tar -chvf /qbittorrent.tar \
