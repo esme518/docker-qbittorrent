@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.12 as builder
+FROM alpine:3.11 as builder
 
 RUN apk add --update --no-cache \
     boost-dev \
@@ -10,9 +10,9 @@ RUN apk add --update --no-cache \
     curl \
     g++ \
     git \
-    libcap \
+    libressl-dev \
     make \
-    openssl-dev \
+    ninja \
     qt5-qtbase \
     qt5-qttools-dev \
     tar \
@@ -20,35 +20,34 @@ RUN apk add --update --no-cache \
 
 ARG LIBTORRENT_VERSION="1.2.12"
 
-RUN cd /tmp \
+RUN set -ex \
+  && cd /tmp \
   && git clone https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
   && git checkout tags/v${LIBTORRENT_VERSION} \
   && cmake -B builddir \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_STANDARD=17 \
-        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
-        -DCMAKE_INSTALL_LIBDIR=lib \
-  && cmake --build builddir --parallel $((`nproc`+1)) \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+  && cmake --build builddir \
   && cmake --install builddir \
   && ls -al /usr/local/lib/
 
 ARG QBITTORRENT_VERSION="4.2.5"
 
-RUN cd /tmp \
+RUN set -ex \
+  && cd /tmp \
   && git clone https://github.com/qbittorrent/qBittorrent.git \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && cmake -B builddir \
+  && cmake -G "Ninja" -B builddir \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_STANDARD=17 \
-        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
-        -DSTACKTRACE=OFF \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DDBUS=OFF \
+        -DGUI=OFF \
         -DQBT_VER_STATUS="" \
-        -DDBUS=OFF -DGUI=OFF \
-  && cmake --build builddir --parallel $((`nproc`+1)) \
+        -DSTACKTRACE=OFF \
+  && cmake --build builddir \
   && cmake --install builddir \
-  && setcap 'cap_net_bind_service=+ep' /usr/bin/qbittorrent-nox \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
   && ldd /usr/local/bin/qbittorrent-nox |cut -d ">" -f 2|grep lib|cut -d "(" -f 1|xargs tar -chvf /qbittorrent.tar \
@@ -67,7 +66,7 @@ RUN runDeps="$( \
     | sort -u \
   )" \
   && apk add --update --no-cache --virtual .run-deps $runDeps \
-  && apk add --update --no-cache ca-certificates dumb-init su-exec \
+  && apk add --update --no-cache ca-certificates dumb-init python3 su-exec \
   && rm -rf /tmp/* /var/cache/apk/*
 
 RUN chmod a+x /usr/local/bin/qbittorrent-nox \
