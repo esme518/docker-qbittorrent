@@ -28,9 +28,9 @@ RUN cd /tmp \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_CXX_STANDARD=17 \
         -DCMAKE_INSTALL_PREFIX:PATH=/usr \
-        -DCMAKE_INSTALL_LIBDIR=lib && \
-  && cmake --build builddir --parallel $((`nproc`+1)) && \
-  && cmake --install builddir && \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+  && cmake --build builddir --parallel $((`nproc`+1)) \
+  && cmake --install builddir \
   && ls -al /usr/local/lib/
 
 ARG QBITTORRENT_VERSION="4.2.5"
@@ -45,10 +45,10 @@ RUN cd /tmp \
         -DCMAKE_INSTALL_PREFIX:PATH=/usr \
         -DSTACKTRACE=OFF \
         -DQBT_VER_STATUS="" \
-        -DDBUS=OFF -DGUI=OFF && \
-  && cmake --build builddir --parallel $((`nproc`+1)) && \
-  && cmake --install builddir && \
-  && setcap 'cap_net_bind_service=+ep' /usr/bin/qbittorrent-nox && \
+        -DDBUS=OFF -DGUI=OFF \
+  && cmake --build builddir --parallel $((`nproc`+1)) \
+  && cmake --install builddir \
+  && setcap 'cap_net_bind_service=+ep' /usr/bin/qbittorrent-nox \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
   && ldd /usr/local/bin/qbittorrent-nox |cut -d ">" -f 2|grep lib|cut -d "(" -f 1|xargs tar -chvf /qbittorrent.tar \
