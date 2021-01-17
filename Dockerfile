@@ -5,21 +5,17 @@
 FROM alpine:3.12 as builder
 
 RUN apk add --update --no-cache \
-    autoconf \
-    automake \
-    binutils \
     boost-dev \
-    boost-python3 \
-    py3-setuptools \
-    build-base \
-    cppunit-dev \
+    cmake \
+    curl \
+    g++ \
     git \
-    libtool \
-    linux-headers \
-    ncurses-dev \
+    libcap \
+    make \
     openssl-dev \
-    python3-dev \
-    zlib-dev \
+    qt5-qtbase \
+    qt5-qttools-dev \
+    tar \
   && rm -rf /tmp/* /var/cache/apk/*
 
 ARG LIBTORRENT_VERSION="1.2.12"
@@ -28,20 +24,14 @@ RUN cd /tmp \
   && git clone https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
   && git checkout tags/v${LIBTORRENT_VERSION} \
-  && ./autotool.sh \
-  && ./configure \
-    --with-libiconv \
-    --enable-python-binding \
-    --with-boost-python="$(ls -1 /usr/lib/libboost_python3*.so* | sort | head -1 | sed 's/.*.\/lib\(.*\)\.so.*/\1/')" \
-    PYTHON="$(which python3)" \
-  && make -j$(nproc) \
-  && make install-strip \
+  && cmake -B builddir \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_STANDARD=17 \
+        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib && \
+  && cmake --build builddir --parallel $((`nproc`+1)) && \
+  && cmake --install builddir && \
   && ls -al /usr/local/lib/
-
-RUN apk add --update --no-cache \
-    qt5-qtbase \
-    qt5-qttools-dev \
-  && rm -rf /tmp/* /var/cache/apk/*
 
 ARG QBITTORRENT_VERSION="4.2.5"
 
@@ -49,9 +39,16 @@ RUN cd /tmp \
   && git clone https://github.com/qbittorrent/qBittorrent.git \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && ./configure --disable-gui \
-  && make -j$(nproc) \
-  && make install \
+  && cmake -B builddir \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_CXX_STANDARD=17 \
+        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+        -DSTACKTRACE=OFF \
+        -DQBT_VER_STATUS="" \
+        -DDBUS=OFF -DGUI=OFF && \
+  && cmake --build builddir --parallel $((`nproc`+1)) && \
+  && cmake --install builddir && \
+  && setcap 'cap_net_bind_service=+ep' /usr/bin/qbittorrent-nox && \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
   && ldd /usr/local/bin/qbittorrent-nox |cut -d ">" -f 2|grep lib|cut -d "(" -f 1|xargs tar -chvf /qbittorrent.tar \
@@ -59,7 +56,7 @@ RUN cd /tmp \
   && tar -xvf /qbittorrent.tar -C /qbittorrent-bin \
   && cp --parents /usr/local/bin/qbittorrent-nox /qbittorrent-bin
 
-FROM alpine:3.11
+FROM alpine:3.12
 
 COPY --from=builder /qbittorrent-bin /
 
