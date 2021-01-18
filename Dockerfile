@@ -5,13 +5,14 @@
 FROM alpine:3.11 as builder
 
 RUN apk add --update --no-cache \
+    autoconf \
+    automake \
     boost-dev \
-    build-base \
-    cmake \
     curl \
     g++ \
     git \
     libressl-dev \
+    libtool \
     make \
     qt5-qtbase \
     qt5-qttools-dev \
@@ -25,12 +26,10 @@ RUN set -ex \
   && git clone https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
   && git checkout tags/libtorrent-${LIBTORRENT_VERSION//./_} \
-  && cmake -B builddir \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr/local \
-  && cmake --build builddir \
-  && cmake --install builddir \
-  && mv /usr/local/lib64/* /usr/local/lib \
+  && ./autotool.sh \
+  && ./configure --disable-debug --enable-encryption \
+  && make \
+  && make install \
   && ls -al /usr/local/lib/
 
 ARG QBITTORRENT_VERSION="4.1.9.1"
