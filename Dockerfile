@@ -27,8 +27,8 @@ RUN set -ex \
   && cd libtorrent \
   && git checkout tags/libtorrent-${LIBTORRENT_VERSION//./_} \
   && ./autotool.sh \
-  && ./configure --disable-debug --enable-encryption \
-  && make \
+  && ./configure CXXFLAGS="-std=c++14" --disable-debug --enable-encryption \
+  && make -j$(nproc) \
   && make install \
   && ls -al /usr/local/lib/
 
@@ -39,8 +39,8 @@ RUN set -ex \
   && git clone https://github.com/qbittorrent/qBittorrent.git \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && ./configure --disable-gui --disable-stacktrace \
-  && make \
+  && ./configure CXXFLAGS="-std=c++14" --disable-gui --disable-stacktrace \
+  && make -j$(nproc) \
   && make install \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
