@@ -73,10 +73,10 @@ RUN runDeps="$( \
 
 RUN chmod a+x /usr/local/bin/qbittorrent-nox \
   && mkdir -p /home/qbittorrent/.config/qBittorrent \
-  && mkdir -p /home/qbittorrent/.local/share/data/qBittorrent \
+  && mkdir -p /home/qbittorrent/.local/share/qBittorrent \
   && mkdir /downloads \
   && ln -s /home/qbittorrent/.config/qBittorrent /config \
-  && ln -s /home/qbittorrent/.local/share/data/qBittorrent /torrents
+  && ln -s /home/qbittorrent/.local/share/qBittorrent /torrents
 
 COPY qBittorrent.conf /default/qBittorrent.conf
 COPY entrypoint.sh /
