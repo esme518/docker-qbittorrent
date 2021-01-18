@@ -41,7 +41,7 @@ RUN set -ex \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
   && ./configure CXXFLAGS="-std=c++14" --disable-gui --disable-stacktrace \
-  && make \
+  && make -j$(nproc) \
   && make install \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
