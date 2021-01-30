@@ -17,13 +17,14 @@ RUN apk add --update --no-cache \
     tar \
   && rm -rf /tmp/* /var/cache/apk/*
 
-ARG LIBTORRENT_VERSION="1.2.12"
+ARG LIBTORRENT_VERSION="RC_1_2"
 
 RUN set -ex \
   && cd /tmp \
   && git clone https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
-  && git checkout tags/v${LIBTORRENT_VERSION} \
+#  && git checkout tags/v${LIBTORRENT_VERSION} \
+  && git checkout ${LIBTORRENT_VERSION} \
   && cmake -B builddir \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_CXX_STANDARD=14 \
@@ -32,7 +33,7 @@ RUN set -ex \
   && cmake --install builddir \
   && ls -al /usr/local/lib64/
 
-ARG QBITTORRENT_VERSION="4.3.2"
+ARG QBITTORRENT_VERSION="4.3.3"
 
 RUN set -ex \
   && cd /tmp \
