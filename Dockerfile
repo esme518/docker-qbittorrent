@@ -50,7 +50,7 @@ RUN set -ex \
   && tar -xvf /qbittorrent.tar -C /qbittorrent-bin \
   && cp --parents /usr/local/bin/qbittorrent-nox /qbittorrent-bin
 
-FROM alpine:3.12
+FROM alpine
 
 COPY --from=builder /qbittorrent-bin /
 
