@@ -17,7 +17,7 @@ RUN apk add --update --no-cache \
     tar \
   && rm -rf /tmp/* /var/cache/apk/*
 
-ARG LIBTORRENT_VERSION="1.2.12"
+ARG LIBTORRENT_VERSION="1.2.13"
 
 RUN set -ex \
   && cd /tmp \
