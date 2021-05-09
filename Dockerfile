@@ -33,7 +33,7 @@ RUN set -ex \
   && cmake --install builddir \
   && ls -al /usr/local/lib64/
 
-ARG QBITTORRENT_VERSION="4.3.4.1"
+ARG QBITTORRENT_VERSION="4.3.5"
 
 RUN set -ex \
   && cd /tmp \
