@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.12 as builder
+FROM alpine:3.13 as builder
 
 RUN apk add --update --no-cache \
     boost-dev \
