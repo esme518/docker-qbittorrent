@@ -52,7 +52,7 @@ RUN set -ex \
   && cd /tmp \
   && git clone --shallow-submodules --recurse-submodules https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
-#  && git checkout tags/v${LIBTORRENT_VERSION} \
+# && git checkout tags/v${LIBTORRENT_VERSION} \
   && git checkout ${LIBTORRENT_VERSION} \
   && cmake -Wno-dev -G Ninja -B build \
        -D CMAKE_BUILD_TYPE="Release" \
