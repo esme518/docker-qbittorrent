@@ -2,55 +2,87 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.12 as builder
+FROM alpine:3.13 as builder
 
 RUN apk add --update --no-cache \
-    boost-dev \
+    autoconf \
+    automake \
+    build-base \
     cmake \
     curl \
-    g++ \
     git \
-    libressl-dev \
-    make \
-    qt5-qtbase \
+    icu-dev \
+    libexecinfo-dev \
+    libtool \
+    linux-headers \
+    openssl-dev \
+    perl \
+    pkgconf \
+    python3 \
+    python3-dev \
+    qt5-qtbase-dev \
+    qt5-qtsvg-dev \
     qt5-qttools-dev \
+    re2c \
     tar \
+    zlib-dev \
   && rm -rf /tmp/* /var/cache/apk/*
+
+RUN set -ex \
+  && cd /tmp \
+  && git clone --shallow-submodules --recurse-submodules https://github.com/ninja-build/ninja.git \
+  && cd ninja \
+  && git checkout "$(git tag -l --sort=-v:refname "v*" | head -n 1)" \
+  && cmake -Wno-dev -B build \
+       -D CMAKE_CXX_STANDARD=17 \
+       -D CMAKE_INSTALL_PREFIX="/usr/local" \
+  && cmake --build build \
+  && cmake --install build
+
+RUN set -ex \
+  && cd /tmp \
+  && curl -SNLk "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz" -o boost.tar.gz \
+  && mkdir -p /usr/lib/boost \
+  && tar -xf boost.tar.gz -C /usr/lib/boost --strip-components=1 \
+  && ls -al /usr/lib/boost/
 
 ARG LIBTORRENT_VERSION="RC_1_2"
 
 RUN set -ex \
   && cd /tmp \
-  && git clone https://github.com/arvidn/libtorrent.git \
+  && git clone --shallow-submodules --recurse-submodules https://github.com/arvidn/libtorrent.git \
   && cd libtorrent \
 #  && git checkout tags/v${LIBTORRENT_VERSION} \
   && git checkout ${LIBTORRENT_VERSION} \
-  && cmake -B builddir \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_STANDARD=14 \
-        -DCMAKE_INSTALL_PREFIX=/usr/local \
-  && cmake --build builddir \
-  && cmake --install builddir \
-  && ls -al /usr/local/lib64/
+  && cmake -Wno-dev -G Ninja -B build \
+       -D CMAKE_BUILD_TYPE="Release" \
+       -D CMAKE_CXX_STANDARD=17 \
+       -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
+       -D CMAKE_INSTALL_LIBDIR="lib" \
+       -D CMAKE_INSTALL_PREFIX="/usr/local" \
+  && cmake --build build \
+  && cmake --install build \
+  && ls -al /usr/local/lib/
 
 ARG QBITTORRENT_VERSION="4.3.6"
 
 RUN set -ex \
   && cd /tmp \
-  && git clone https://github.com/qbittorrent/qBittorrent.git \
+  && git clone --shallow-submodules --recurse-submodules https://github.com/qbittorrent/qBittorrent.git \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && cmake -B builddir \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_STANDARD=14 \
-        -DCMAKE_INSTALL_PREFIX=/usr/local \
-        -DDBUS=OFF \
-        -DGUI=OFF \
-        -DQBT_VER_STATUS="" \
-        -DSTACKTRACE=OFF \
-  && cmake --build builddir \
-  && cmake --install builddir \
-  && mv /usr/local/lib64/* /usr/local/lib \
+  && cmake -Wno-dev -G Ninja -B build \
+       -D CMAKE_BUILD_TYPE="release" \
+       -D CMAKE_CXX_STANDARD=17 \
+       -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
+       -D CMAKE_CXX_STANDARD_LIBRARIES="/usr/lib/libexecinfo.so" \
+       -D CMAKE_INSTALL_PREFIX="/usr/local" \
+       -D DBUS=OFF \
+       -D GUI=OFF \
+       -D QBT_VER_STATUS="" \
+       -D STACKTRACE=OFF \
+  && cmake --build build \
+  && cmake --install build \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help \
   && ldd /usr/local/bin/qbittorrent-nox |cut -d ">" -f 2|grep lib|cut -d "(" -f 1|xargs tar -chvf /qbittorrent.tar \
