@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.13 as builder
+FROM alpine:3.12 as builder
 
 RUN set -ex \
   && echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories \
@@ -17,14 +17,14 @@ RUN set -ex \
      libexecinfo-dev \
      libtool \
      linux-headers \
-     openssl-dev \
+     openssl-dev@edge \
      perl \
      pkgconf \
      python3 \
      python3-dev \
-     qt5-qtbase-dev \
-     qt5-qtsvg-dev \
-     qt5-qttools-dev \
+     qt5-qtbase-dev@edge \
+     qt5-qtsvg-dev@edge \
+     qt5-qttools-dev@edge \
      re2c \
      tar \
      zlib-dev \
