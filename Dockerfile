@@ -28,7 +28,7 @@ RUN set -ex \
      qt5-qttools-dev@edge \
      re2c \
      tar \
-     zlib-dev \
+     zlib-dev@edge \
   && rm -rf /tmp/* /var/cache/apk/*
 
 RUN set -ex \
