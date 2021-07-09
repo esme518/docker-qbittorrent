@@ -4,28 +4,30 @@
 
 FROM alpine:3.13 as builder
 
-RUN apk add --update --no-cache \
-    autoconf \
-    automake \
-    build-base \
-    cmake \
-    curl \
-    git \
-    icu-dev \
-    libexecinfo-dev \
-    libtool \
-    linux-headers \
-    openssl-dev \
-    perl \
-    pkgconf \
-    python3 \
-    python3-dev \
-    qt5-qtbase-dev \
-    qt5-qtsvg-dev \
-    qt5-qttools-dev \
-    re2c \
-    tar \
-    zlib-dev \
+RUN set -ex \
+  && echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories \
+  && apk add --update --no-cache \
+     autoconf \
+     automake \
+     build-base \
+     cmake@edge \
+     curl \
+     git \
+     icu-dev \
+     libexecinfo-dev \
+     libtool \
+     linux-headers \
+     openssl-dev \
+     perl \
+     pkgconf \
+     python3 \
+     python3-dev \
+     qt5-qtbase-dev \
+     qt5-qtsvg-dev \
+     qt5-qttools-dev \
+     re2c \
+     tar \
+     zlib-dev \
   && rm -rf /tmp/* /var/cache/apk/*
 
 RUN set -ex \
