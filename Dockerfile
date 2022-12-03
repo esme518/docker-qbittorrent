@@ -22,9 +22,9 @@ RUN set -ex \
      pkgconf \
      python3 \
      python3-dev \
-     qt5-qtbase-dev \
-     qt5-qtsvg-dev \
-     qt5-qttools-dev \
+     qt6-qtbase-dev \
+     qt6-qtsvg-dev \
+     qt6-qttools-dev \
      re2c \
      samurai \
      tar \
@@ -42,7 +42,7 @@ RUN set -ex \
   && tar -xf boost.tar.gz -C /usr/lib/boost --strip-components=1 \
   && ls -al /usr/lib/boost/
 
-ARG LIBTORRENT_VERSION="RC_1_2"
+ARG LIBTORRENT_VERSION="RC_2_0"
 
 RUN set -ex \
   && cd /tmp \
@@ -60,7 +60,7 @@ RUN set -ex \
   && cmake --install build \
   && ls -al /usr/local/lib/
 
-ARG QBITTORRENT_VERSION="4.3.9"
+ARG QBITTORRENT_VERSION="4.4.5"
 
 RUN set -ex \
   && cd /tmp \
@@ -73,6 +73,7 @@ RUN set -ex \
        -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
        -D CMAKE_CXX_STANDARD_LIBRARIES="/usr/lib/libexecinfo.so" \
        -D CMAKE_INSTALL_PREFIX="/usr/local" \
+       -D QT6=ON \
        -D DBUS=OFF \
        -D GUI=OFF \
        -D QBT_VER_STATUS="" \
