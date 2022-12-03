@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.16 as builder
+FROM alpine:3.17 as builder
 
 RUN set -ex \
   && apk add --update --no-cache \
@@ -14,7 +14,6 @@ RUN set -ex \
      git \
      gnu-libiconv \
      icu-dev \
-     libexecinfo-dev \
      libtool \
      linux-headers \
      openssl-dev \
@@ -60,7 +59,7 @@ RUN set -ex \
   && cmake --install build \
   && ls -al /usr/local/lib/
 
-ARG QBITTORRENT_VERSION="4.4.5"
+ARG QBITTORRENT_VERSION="4.5.0"
 
 RUN set -ex \
   && cd /tmp \
@@ -71,7 +70,6 @@ RUN set -ex \
        -D CMAKE_BUILD_TYPE="release" \
        -D CMAKE_CXX_STANDARD=17 \
        -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
-       -D CMAKE_CXX_STANDARD_LIBRARIES="/usr/lib/libexecinfo.so" \
        -D CMAKE_INSTALL_PREFIX="/usr/local" \
        -D QT6=ON \
        -D DBUS=OFF \
@@ -97,7 +95,7 @@ RUN set -ex \
   && echo $runDeps > usr/local/run-deps \
   && tree
 
-FROM alpine:3.16
+FROM alpine:3.17
 COPY --from=builder /build/usr/local /usr/local
 
 RUN set -ex \
