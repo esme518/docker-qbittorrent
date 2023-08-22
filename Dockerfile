@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.17 as builder
+FROM alpine:3.18 as builder
 
 RUN set -ex \
   && apk add --update --no-cache \
@@ -95,7 +95,7 @@ RUN set -ex \
   && echo $runDeps > usr/local/run-deps \
   && tree
 
-FROM alpine:3.17
+FROM alpine:3.18
 COPY --from=builder /build/usr/local /usr/local
 
 RUN set -ex \
