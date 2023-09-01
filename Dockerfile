@@ -59,7 +59,7 @@ RUN set -ex \
   && cmake --install build \
   && ls -al /usr/local/lib/
 
-ARG QBITTORRENT_VERSION="4.5.4"
+ARG QBITTORRENT_VERSION="4.5.5"
 
 RUN set -ex \
   && cd /tmp \
