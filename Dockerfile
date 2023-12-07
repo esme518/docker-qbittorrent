@@ -31,12 +31,13 @@ RUN set -ex \
      zlib-dev \
   && rm -rf /tmp/* /var/cache/apk/*
 
-ARG BOOST_URL="https://boostorg.jfrog.io/artifactory/main/release/"
+ARG BOOST_DL="https://www.boost.org/users/download/"
+ARG BOOST_REL="https://boostorg.jfrog.io/artifactory/main/release/"
 
 RUN set -ex \
   && cd /tmp \
-  && export BOOST_VERSION=$(curl $BOOST_URL | egrep -o '\"[0-9]\..+/\"' | sed -e 's/\///g;s/"//g' | sort -V | tail -1) \
-  && wget -O boost.tar.gz "$BOOST_URL${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz" \
+  && export BOOST_VERSION=$(curl -sS $BOOST_DL | grep current | egrep -o '\"[0-9]\..+\"' | sed -e 's/\///g;s/"//g') \
+  && wget -O boost.tar.gz "$BOOST_REL${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz" \
   && mkdir -p /usr/lib/boost \
   && tar -xf boost.tar.gz -C /usr/lib/boost --strip-components=1 \
   && ls -al /usr/lib/boost/
