@@ -2,107 +2,22 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.18 as builder
+FROM alpine as source
+
+WORKDIR /root
 
 RUN set -ex \
-  && apk add --update --no-cache \
-     autoconf \
-     automake \
-     build-base \
-     cmake \
-     curl \
-     git \
-     gnu-libiconv \
-     icu-dev \
-     libtool \
-     linux-headers \
-     openssl-dev \
-     perl \
-     pkgconf \
-     python3 \
-     python3-dev \
-     qt6-qtbase-dev \
-     qt6-qtsvg-dev \
-     qt6-qttools-dev \
-     re2c \
-     samurai \
-     tar \
-     tree \
-     zlib-dev \
-  && rm -rf /tmp/* /var/cache/apk/*
+    && apk add --update --no-cache git \
+    && export tag=$(git ls-remote --tags https://github.com/userdocs/qbittorrent-nox-static.git 'refs/tags/release-4.5*_v2*' | awk -F/ '{ print $3 }' | sort -V | tail -1) \
+    && wget -qO qbittorrent-nox https://github.com/userdocs/qbittorrent-nox-static/releases/download/$tag/$(uname -m)-qbittorrent-nox \
+    && chmod +x qbittorrent-nox \
+    && ./qbittorrent-nox -v
 
-ARG BOOST_DL="https://www.boost.org/users/download/"
-ARG BOOST_REL="https://boostorg.jfrog.io/artifactory/main/release/"
+FROM alpine
+COPY --from=source /root/qbittorrent-nox /usr/local/bin/qbittorrent-nox
 
 RUN set -ex \
-  && cd /tmp \
-  && export BOOST_VERSION=$(curl -sS $BOOST_DL | grep current | egrep -o '\"[0-9]\..+\"' | sed -e 's/\///g;s/"//g') \
-  && wget -O boost.tar.gz "$BOOST_REL${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz" \
-  && mkdir -p /usr/lib/boost \
-  && tar -xf boost.tar.gz -C /usr/lib/boost --strip-components=1 \
-  && ls -al /usr/lib/boost/
-
-ARG LIBTORRENT_VERSION="RC_2_0"
-
-RUN set -ex \
-  && cd /tmp \
-  && git clone --shallow-submodules --recurse-submodules https://github.com/arvidn/libtorrent.git \
-  && cd libtorrent \
-# && git checkout tags/v${LIBTORRENT_VERSION} \
-  && git checkout ${LIBTORRENT_VERSION} \
-  && cmake -Wno-dev -G Ninja -B build \
-       -D CMAKE_BUILD_TYPE="Release" \
-       -D CMAKE_CXX_STANDARD=17 \
-       -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
-       -D CMAKE_INSTALL_LIBDIR="lib" \
-       -D CMAKE_INSTALL_PREFIX="/usr/local" \
-  && cmake --build build \
-  && cmake --install build \
-  && ls -al /usr/local/lib/
-
-ARG QBITTORRENT_VERSION="4.5.5"
-
-RUN set -ex \
-  && cd /tmp \
-  && git clone --shallow-submodules --recurse-submodules https://github.com/qbittorrent/qBittorrent.git \
-  && cd qBittorrent \
-  && git checkout tags/release-${QBITTORRENT_VERSION} \
-  && cmake -Wno-dev -G Ninja -B build \
-       -D CMAKE_BUILD_TYPE="release" \
-       -D CMAKE_CXX_STANDARD=17 \
-       -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
-       -D CMAKE_INSTALL_PREFIX="/usr/local" \
-       -D QT6=ON \
-       -D DBUS=OFF \
-       -D GUI=OFF \
-       -D QBT_VER_STATUS="" \
-       -D STACKTRACE=OFF \
-  && cmake --build build \
-  && cmake --install build \
-  && ls -al /usr/local/bin/ \
-  && qbittorrent-nox --help
-
-WORKDIR /build
-RUN set -ex \
-  && ldd /usr/local/bin/qbittorrent-nox |cut -d ">" -f 2|grep lib|cut -d "(" -f 1|xargs tar -chvf /tmp/qbittorrent.tar \
-  && tar -xvf /tmp/qbittorrent.tar -C /build \
-  && cp --parents /usr/local/bin/qbittorrent-nox /build \
-  && export runDeps="$( \
-     scanelf --needed --nobanner usr/local/lib/* usr/local/bin/* \
-      | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
-      | xargs -r apk info --installed \
-      | sort -u \
-     )" \
-  && echo $runDeps > usr/local/run-deps \
-  && tree
-
-FROM alpine:3.18
-COPY --from=builder /build/usr/local /usr/local
-
-RUN set -ex \
-  && export runDeps="$(cat /usr/local/run-deps)" \
-  && apk add --update --no-cache --virtual .run-deps $runDeps \
-  && apk add --update --no-cache ca-certificates dumb-init python3 su-exec \
+  && apk add --update --no-cache ca-certificates python3 su-exec tini \
   && rm -rf /tmp/* /var/cache/apk/*
 
 RUN chmod a+x /usr/local/bin/qbittorrent-nox \
@@ -122,5 +37,5 @@ ENV PUID=1500
 ENV PGID=1500
 ENV WEBUI_PORT=8080
 
-ENTRYPOINT ["dumb-init", "/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 CMD qbittorrent-nox --webui-port=$WEBUI_PORT
