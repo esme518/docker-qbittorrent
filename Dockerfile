@@ -8,7 +8,7 @@ WORKDIR /root
 
 RUN set -ex \
     && apk add --update --no-cache git \
-    && export tag=$(git ls-remote --tags https://github.com/userdocs/qbittorrent-nox-static.git 'refs/tags/release-4.5*_v2*' | awk -F/ '{ print $3 }' | sort -V | tail -1) \
+    && export tag=$(git ls-remote --tags https://github.com/userdocs/qbittorrent-nox-static.git 'refs/tags/release-4.5*_v1*' | awk -F/ '{ print $3 }' | sort -V | tail -1) \
     && wget -qO qbittorrent-nox https://github.com/userdocs/qbittorrent-nox-static/releases/download/$tag/$(uname -m)-qbittorrent-nox \
     && chmod +x qbittorrent-nox \
     && ./qbittorrent-nox -v
