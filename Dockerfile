@@ -53,10 +53,12 @@ RUN set -ex \
   && cmake -Wno-dev -G Ninja -B build \
        -D CMAKE_BUILD_TYPE="Release" \
        -D CMAKE_CXX_STANDARD=17 \
+       -D CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
        -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
        -D CMAKE_INSTALL_LIBDIR="lib" \
        -D CMAKE_INSTALL_PREFIX="/usr/local" \
-  && cmake --build build \
+       -D deprecated-functions=OFF \
+  && cmake --build build -j $(nproc) \
   && cmake --install build \
   && ls -al /usr/local/lib/
 
@@ -68,8 +70,9 @@ RUN set -ex \
   && cd qBittorrent \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
   && cmake -Wno-dev -G Ninja -B build \
-       -D CMAKE_BUILD_TYPE="release" \
+       -D CMAKE_BUILD_TYPE="Release" \
        -D CMAKE_CXX_STANDARD=17 \
+       -D CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
        -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
        -D CMAKE_INSTALL_PREFIX="/usr/local" \
        -D QT6=ON \
@@ -77,7 +80,7 @@ RUN set -ex \
        -D GUI=OFF \
        -D QBT_VER_STATUS="" \
        -D STACKTRACE=OFF \
-  && cmake --build build \
+  && cmake --build build -j $(nproc) \
   && cmake --install build \
   && ls -al /usr/local/bin/ \
   && qbittorrent-nox --help
@@ -102,7 +105,7 @@ COPY --from=builder /build/usr/local /usr/local
 RUN set -ex \
   && export runDeps="$(cat /usr/local/run-deps)" \
   && apk add --update --no-cache --virtual .run-deps $runDeps \
-  && apk add --update --no-cache ca-certificates dumb-init python3 su-exec \
+  && apk add --update --no-cache ca-certificates python3 su-exec tini \
   && rm -rf /tmp/* /var/cache/apk/*
 
 RUN chmod a+x /usr/local/bin/qbittorrent-nox \
@@ -122,5 +125,5 @@ ENV PUID=1500
 ENV PGID=1500
 ENV WEBUI_PORT=8080
 
-ENTRYPOINT ["dumb-init", "/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "-g", "--", "/entrypoint.sh"]
 CMD qbittorrent-nox --webui-port=$WEBUI_PORT
