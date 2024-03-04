@@ -17,7 +17,7 @@ FROM alpine
 COPY --from=source /root/qbittorrent-nox /usr/local/bin/qbittorrent-nox
 
 RUN set -ex \
-  && apk add --update --no-cache ca-certificates python3 su-exec tini \
+  && apk add --update --no-cache ca-certificates python3 su-exec tini mktorrent \
   && rm -rf /tmp/* /var/cache/apk/*
 
 RUN chmod a+x /usr/local/bin/qbittorrent-nox \
