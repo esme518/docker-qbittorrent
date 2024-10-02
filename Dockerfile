@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.19 as builder
+FROM alpine:3.20 as builder
 
 RUN set -ex \
   && apk add --update --no-cache \
@@ -62,7 +62,7 @@ RUN set -ex \
   && cmake --install build \
   && ls -al /usr/local/lib/
 
-ARG QBITTORRENT_VERSION="4.6.5"
+ARG QBITTORRENT_VERSION="4.6.7"
 
 RUN set -ex \
   && cd /tmp \
@@ -99,7 +99,7 @@ RUN set -ex \
   && echo $runDeps > usr/local/run-deps \
   && tree
 
-FROM alpine:3.19
+FROM alpine:3.20
 COPY --from=builder /build/usr/local /usr/local
 
 RUN set -ex \
