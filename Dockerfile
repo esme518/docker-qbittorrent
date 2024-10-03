@@ -52,7 +52,7 @@ RUN set -ex \
   && git checkout ${LIBTORRENT_VERSION} \
   && cmake -Wno-dev -G Ninja -B build \
        -D CMAKE_BUILD_TYPE="Release" \
-       -D CMAKE_CXX_STANDARD=17 \
+       -D CMAKE_CXX_STANDARD=20 \
        -D CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
        -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
        -D CMAKE_INSTALL_LIBDIR="lib" \
@@ -62,7 +62,7 @@ RUN set -ex \
   && cmake --install build \
   && ls -al /usr/local/lib/
 
-ARG QBITTORRENT_VERSION="4.6.7"
+ARG QBITTORRENT_VERSION="5.0.0"
 
 RUN set -ex \
   && cd /tmp \
@@ -71,7 +71,7 @@ RUN set -ex \
   && git checkout tags/release-${QBITTORRENT_VERSION} \
   && cmake -Wno-dev -G Ninja -B build \
        -D CMAKE_BUILD_TYPE="Release" \
-       -D CMAKE_CXX_STANDARD=17 \
+       -D CMAKE_CXX_STANDARD=20 \
        -D CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
        -D BOOST_INCLUDEDIR="/usr/lib/boost/" \
        -D CMAKE_INSTALL_PREFIX="/usr/local" \
