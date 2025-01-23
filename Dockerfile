@@ -32,7 +32,7 @@ RUN set -ex \
   && rm -rf /tmp/* /var/cache/apk/*
 
 ARG BOOST_DL="https://www.boost.org/users/download/"
-ARG BOOST_REL="https://boostorg.jfrog.io/artifactory/main/release/"
+ARG BOOST_REL="https://archives.boost.io/release/"
 
 RUN set -ex \
   && cd /tmp \
