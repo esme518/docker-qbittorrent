@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.20 as builder
+FROM alpine:3.21 as builder
 
 RUN set -ex \
   && apk add --update --no-cache \
@@ -32,7 +32,7 @@ RUN set -ex \
   && rm -rf /tmp/* /var/cache/apk/*
 
 ARG BOOST_DL="https://www.boost.org/users/download/"
-ARG BOOST_REL="https://boostorg.jfrog.io/artifactory/main/release/"
+ARG BOOST_REL="https://archives.boost.io/release/"
 
 RUN set -ex \
   && cd /tmp \
@@ -41,6 +41,10 @@ RUN set -ex \
   && mkdir -p /usr/lib/boost \
   && tar -xf boost.tar.gz -C /usr/lib/boost --strip-components=1 \
   && ls -al /usr/lib/boost/
+
+ENV CFLAGS="-pipe -fstack-clash-protection -fstack-protector-strong -fno-plt -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS" \
+    CXXFLAGS="-pipe -fstack-clash-protection -fstack-protector-strong -fno-plt -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS" \
+    LDFLAGS="-gz -Wl,-O1,--as-needed,--sort-common,-z,now,-z,pack-relative-relocs,-z,relro"
 
 ARG LIBTORRENT_VERSION="RC_2_0"
 
@@ -51,6 +55,7 @@ RUN set -ex \
 # && git checkout tags/v${LIBTORRENT_VERSION} \
   && git checkout ${LIBTORRENT_VERSION} \
   && cmake -Wno-dev -G Ninja -B build \
+       -D BUILD_SHARED_LIBS=OFF \
        -D CMAKE_BUILD_TYPE="Release" \
        -D CMAKE_CXX_STANDARD=17 \
        -D CMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
@@ -99,7 +104,7 @@ RUN set -ex \
   && echo $runDeps > usr/local/run-deps \
   && tree
 
-FROM alpine:3.20
+FROM alpine:3.21
 COPY --from=builder /build/usr/local /usr/local
 
 RUN set -ex \
