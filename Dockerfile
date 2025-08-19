@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.21 as builder
+FROM alpine:3.22 as builder
 
 RUN set -ex \
   && apk add --update --no-cache \
@@ -22,6 +22,7 @@ RUN set -ex \
      python3 \
      python3-dev \
      qt6-qtbase-dev \
+     qt6-qtbase-private-dev \
      qt6-qtsvg-dev \
      qt6-qttools-dev \
      re2c \
@@ -103,8 +104,9 @@ RUN set -ex \
   && echo $runDeps > usr/local/run-deps \
   && tree
 
-FROM alpine:3.21
+FROM alpine:3.22
 COPY --from=builder /build/usr/local /usr/local
+RUN deluser guest && delgroup users
 
 RUN set -ex \
   && export runDeps="$(cat /usr/local/run-deps)" \
