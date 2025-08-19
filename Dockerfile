@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.21 as builder
+FROM alpine:3.22 as builder
 
 RUN set -ex \
   && apk add --update --no-cache \
@@ -22,6 +22,7 @@ RUN set -ex \
      python3 \
      python3-dev \
      qt6-qtbase-dev \
+     qt6-qtbase-private-dev \
      qt6-qtsvg-dev \
      qt6-qttools-dev \
      re2c \
@@ -31,12 +32,12 @@ RUN set -ex \
      zlib-dev \
   && rm -rf /tmp/* /var/cache/apk/*
 
-ARG BOOST_DL="https://www.boost.org/users/download/"
+ARG BOOST_DL="https://www.boost.org/releases/latest/"
 ARG BOOST_REL="https://archives.boost.io/release/"
 
 RUN set -ex \
   && cd /tmp \
-  && export BOOST_VERSION=$(curl -sS $BOOST_DL | grep current | egrep -o '\"[0-9]\..+\"' | sed -e 's/\///g;s/"//g') \
+  && export BOOST_VERSION=$(curl -sS $BOOST_DL | grep Latest | egrep -o '[0-9]+\.[0-9]+\.[0-9]+') \
   && wget -O boost.tar.gz "$BOOST_REL${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz" \
   && mkdir -p /usr/lib/boost \
   && tar -xf boost.tar.gz -C /usr/lib/boost --strip-components=1 \
@@ -103,8 +104,9 @@ RUN set -ex \
   && echo $runDeps > usr/local/run-deps \
   && tree
 
-FROM alpine:3.21
+FROM alpine:3.22
 COPY --from=builder /build/usr/local /usr/local
+RUN deluser guest && delgroup users
 
 RUN set -ex \
   && export runDeps="$(cat /usr/local/run-deps)" \
