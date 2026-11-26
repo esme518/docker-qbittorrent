@@ -2,7 +2,7 @@
 # Dockerfile for qbittorrent
 #
 
-FROM alpine:3.23 as builder
+FROM alpine:3.24 as builder
 
 RUN set -ex \
   && apk add --update --no-cache \
@@ -47,7 +47,7 @@ ENV CFLAGS="-pipe -fstack-clash-protection -fstack-protector-strong -fno-plt -U_
     CXXFLAGS="-pipe -fstack-clash-protection -fstack-protector-strong -fno-plt -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -D_GLIBCXX_ASSERTIONS" \
     LDFLAGS="-gz -Wl,-O1,--as-needed,--sort-common,-z,now,-z,pack-relative-relocs,-z,relro"
 
-ARG LIBTORRENT_VERSION="RC_2_0"
+ARG LIBTORRENT_VERSION="RC_2_1"
 
 RUN set -ex \
   && cd /tmp \
@@ -68,7 +68,7 @@ RUN set -ex \
   && cmake --install build \
   && ls -al /usr/local/lib/
 
-ARG QBITTORRENT_VERSION="5.2.4"
+ARG QBITTORRENT_VERSION="5.3.1"
 
 RUN set -ex \
   && cd /tmp \
@@ -104,7 +104,7 @@ RUN set -ex \
   && echo $runDeps > usr/local/run-deps \
   && tree
 
-FROM alpine:3.23
+FROM alpine:3.24
 COPY --from=builder /build/usr/local /usr/local
 RUN deluser guest && delgroup users
 
